@@ -1,0 +1,5 @@
+{
+  "name": "TokenCraft: Custom Tokenizer Builder",
+  "description": "An interactive tool to build, test, and visualize custom text tokenizers. Use manual Regex rules or ask AI to design one for you.",
+  "requestFramePermissions": []
+}
