@@ -1,5 +1,10 @@
 import { TokenizerConfig, TokenizerModel, Token } from "../types";
 
+export interface DebugStep {
+  preToken: string;
+  subTokens: Token[];
+}
+
 export class BPETokenizer {
   vocab: Map<string, number>;
   reverseVocab: Map<number, string>;
@@ -130,12 +135,15 @@ export class BPETokenizer {
     console.log(`Training complete. Vocab size: ${this.vocab.size}`);
   }
 
-  encode(text: string): Token[] {
+  // Returns tokens and the breakdown structure for visualization
+  encodeDebug(text: string): { tokens: Token[], steps: DebugStep[] } {
     const words = this.preTokenize(text);
     const tokens: Token[] = [];
+    const steps: DebugStep[] = [];
+    
     let currentIndex = 0;
 
-    // Helper to find original index (simple approximation for demo)
+    // Helper to find original index
     const findIndex = (str: string, startPos: number) => {
         return text.indexOf(str, startPos);
     };
@@ -143,23 +151,7 @@ export class BPETokenizer {
     for (const word of words) {
         let wordParts = word.split('');
         
-        // Apply merges repeatedly until no more changes
-        // This is a naive application for the demo; optimized BPE uses a priority queue or the merge list order
-        // Since we didn't store merge order in a simple list for this class efficiently, we iterate.
-        // For a robust implementation, we should iterate through the learned merges in order.
-        
-        // However, since we have the final vocab, a greedy approach works "okay" for demo, 
-        // but strictly we should replay merges.
-        // Let's do a simple loop that tries to merge adjacent pairs if they exist in vocab.
-        // NOTE: This is simplified. Correct BPE requires applying merges in the order they were learned.
-        
-        // To be correct without storing the ordered merge list in memory for this function:
-        // We will just assume the 'splits' logic from training or a greedy longest-match from vocab?
-        // Actually, let's just do a greedy merge loop which is common for "WordPiece" style, 
-        // or re-implement strict BPE if we had the ordered list.
-        
-        // For this demo, let's keep it simple: Re-scan for known tokens.
-        
+        // Simple Greedy Encode (Approximate for demo)
         let changed = true;
         while(changed) {
             changed = false;
@@ -169,9 +161,6 @@ export class BPETokenizer {
                 if (i < wordParts.length - 1) {
                     const pair = wordParts[i] + wordParts[i+1];
                     if (this.vocab.has(pair)) {
-                         // This is slightly incorrect for strict BPE (which cares about merge priority), 
-                         // but visually effective for a custom tokenizer demo to show agglomeration.
-                         // To do it strictly right, we'd need to store the 'rank' of every token.
                          newParts.push(pair);
                          i += 2;
                          changed = true;
@@ -186,28 +175,38 @@ export class BPETokenizer {
 
         // Map to IDs
         const wordStartIndex = findIndex(word, currentIndex);
-        currentIndex = wordStartIndex + word.length; // Advance
+        currentIndex = wordStartIndex + word.length;
         
-        // We don't have exact char indices for sub-parts easily without tracking, 
-        // so we'll just approximate index for the visualizer
         let localOffset = 0;
-        
+        const wordTokens: Token[] = [];
+
         for (const part of wordParts) {
             const id = this.vocab.get(part);
-            const isUnknown = id === undefined;
-            // Fallback for unknown chars (shouldn't happen if trained on this text, but possible on new text)
             const finalId = id !== undefined ? id : (this.vocab.get("<UNK>") ?? -1);
             
-            tokens.push({
+            const tokenObj = {
                 id: finalId,
                 value: part,
                 index: wordStartIndex + localOffset,
                 isSpecial: this.specialTokens.has(part)
-            });
+            };
+            
+            tokens.push(tokenObj);
+            wordTokens.push(tokenObj);
             localOffset += part.length;
         }
+
+        steps.push({
+            preToken: word,
+            subTokens: wordTokens
+        });
     }
-    return tokens;
+
+    return { tokens, steps };
+  }
+
+  encode(text: string): Token[] {
+      return this.encodeDebug(text).tokens;
   }
 
   decode(ids: number[]): string {

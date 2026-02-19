@@ -7,6 +7,9 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <script>
+      // Polyfill process.env for browser environments to prevent crashes
+      window.process = { env: { API_KEY: '' } };
+      
       tailwind.config = {
         theme: {
           extend: {
@@ -45,7 +48,8 @@
     "lucide-react": "https://esm.sh/lucide-react@^0.575.0",
     "@google/genai": "https://esm.sh/@google/genai@^1.42.0",
     "react/": "https://esm.sh/react@^19.2.4/",
-    "react": "https://esm.sh/react@^19.2.4"
+    "react": "https://esm.sh/react@^19.2.4",
+    "js-tiktoken": "https://esm.sh/js-tiktoken@1.0.10"
   }
 }
 </script>

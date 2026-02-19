@@ -1,13 +1,24 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { TokenizerConfig } from "../types";
 
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+let ai: GoogleGenAI | null = null;
+
+const getAI = () => {
+    if (!ai) {
+        // Safe access to process.env.API_KEY
+        // In the polyfill it might be empty, so real app usage relies on injection or the polyfill being updated
+        const key = typeof process !== 'undefined' ? process.env.API_KEY : '';
+        ai = new GoogleGenAI({ apiKey: key });
+    }
+    return ai;
+};
 
 export const generateTokenizerWithGemini = async (
   prompt: string
 ): Promise<TokenizerConfig | null> => {
   try {
-    const response = await ai.models.generateContent({
+    const client = getAI();
+    const response = await client.models.generateContent({
       model: "gemini-3-flash-preview",
       contents: `Create a JavaScript Regular Expression (Regex) that functions as a tokenizer based on this user description: "${prompt}".
       
@@ -55,7 +66,8 @@ export const generateTokenizerWithGemini = async (
 
 export const explainTokenizer = async (regex: string): Promise<string> => {
     try {
-        const response = await ai.models.generateContent({
+        const client = getAI();
+        const response = await client.models.generateContent({
             model: "gemini-3-flash-preview",
             contents: `Explain what this Regular Expression does in the context of text tokenization in one simple sentence: /${regex}/`,
         });
