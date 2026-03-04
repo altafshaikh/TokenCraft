@@ -6,9 +6,10 @@ interface ProcessVisualizerProps {
   steps: DebugStep[];
   regexPattern: string;
   onComplete?: () => void;
+  onProgress?: (count: number) => void;
 }
 
-const ProcessVisualizer: React.FC<ProcessVisualizerProps> = ({ steps, regexPattern, onComplete }) => {
+const ProcessVisualizer: React.FC<ProcessVisualizerProps> = ({ steps, regexPattern, onComplete, onProgress }) => {
   const [visibleCount, setVisibleCount] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -17,7 +18,8 @@ const ProcessVisualizer: React.FC<ProcessVisualizerProps> = ({ steps, regexPatte
   useEffect(() => {
     setVisibleCount(0);
     setIsPlaying(true);
-  }, [steps]);
+    if (onProgress) onProgress(0);
+  }, [steps, onProgress]);
 
   // Animation Loop
   useEffect(() => {
@@ -30,8 +32,16 @@ const ProcessVisualizer: React.FC<ProcessVisualizerProps> = ({ steps, regexPatte
       setIsPlaying(false);
       if (onComplete) onComplete();
     }
+    
+    // Report progress
+    if (onProgress && steps.length > 0) {
+        const currentSteps = steps.slice(0, visibleCount);
+        const tokenCount = currentSteps.reduce((acc, step) => acc + step.subTokens.length, 0);
+        onProgress(tokenCount);
+    }
+
     return () => clearInterval(interval);
-  }, [isPlaying, visibleCount, steps.length, onComplete]);
+  }, [isPlaying, visibleCount, steps, onComplete, onProgress]);
 
   // Auto-scroll to follow animation
   useEffect(() => {

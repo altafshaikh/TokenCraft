@@ -34,6 +34,7 @@ const App: React.FC = () => {
   // --- Live Test State ---
   const [inputText, setInputText] = useState(DEFAULT_INPUT);
   const [isAnimationComplete, setIsAnimationComplete] = useState(false);
+  const [animatedTokenCount, setAnimatedTokenCount] = useState(0);
   
   // Custom Model Tokens & Steps
   const [customTokens, setCustomTokens] = useState<Token[]>([]);
@@ -277,13 +278,14 @@ const App: React.FC = () => {
                                 steps={customDebugSteps} 
                                 regexPattern={regexConfig.regex} 
                                 onComplete={() => setIsAnimationComplete(true)}
+                                onProgress={setAnimatedTokenCount}
                             />
                         </div>
 
                         {/* 2. Token Pot Visualization - Fixed width */}
                         <div className="flex-shrink-0 w-64">
                             <TokenPot 
-                                usedTokens={customTokens.length} 
+                                usedTokens={animatedTokenCount} 
                                 maxTokens={1000} 
                                 showStats={isAnimationComplete}
                             />
