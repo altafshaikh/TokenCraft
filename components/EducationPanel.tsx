@@ -9,7 +9,7 @@ const EducationPanel: React.FC = () => {
         <h3 className="font-semibold text-sm text-slate-800">Tokenizer Challenges & Concepts</h3>
       </div>
       
-      <div className="p-5 space-y-6 text-sm text-slate-600">
+      <div className="p-5 grid grid-cols-1 md:grid-cols-3 gap-6 text-sm text-slate-600">
         
         <section>
           <h4 className="font-bold text-slate-800 flex items-center gap-2 mb-2">
@@ -19,7 +19,7 @@ const EducationPanel: React.FC = () => {
           <p className="mb-2">
             Tokenizers balance between <strong>Character Level</strong> (tiny vocab, long sequences) and <strong>Word Level</strong> (huge vocab, many unknowns).
           </p>
-          <div className="bg-slate-50 p-3 rounded border border-slate-200 text-xs">
+          <div className="bg-slate-50 p-3 rounded border border-slate-200 text-xs h-full">
             <ul className="list-disc pl-4 space-y-1">
               <li><strong>Small Vocab (e.g., 200 tokens):</strong> Your custom model splits words often (e.g., "i", "n", "g"). Good for flexibility, bad for model efficiency.</li>
               <li><strong>Large Vocab (e.g., GPT-4's ~100k):</strong> Memorizes whole words like "Tokenization". Efficient, but the model file is larger.</li>
@@ -35,7 +35,7 @@ const EducationPanel: React.FC = () => {
           <p>
             Computers see spaces as just another character. Tokenizers must decide: is <code>" apple"</code> (with space) different from <code>"apple"</code>?
           </p>
-          <p className="mt-2 text-xs italic">
+          <p className="mt-2 text-xs italic bg-slate-50 p-3 rounded border border-slate-200 h-full">
             <strong>Observe:</strong> In GPT-4 mode, notice how some tokens have a leading space (visualized often as a distinct block). In your custom BPE, check your Regex rules in the left panel to see if you are capturing spaces!
           </p>
         </section>
@@ -48,7 +48,7 @@ const EducationPanel: React.FC = () => {
           <p>
             How do we handle emojis (😊) or rare scripts? Modern tokenizers (like GPT-4's <code>cl100k_base</code>) often process text as raw <strong>bytes</strong> (UTF-8) rather than characters.
           </p>
-          <p className="mt-2">
+          <p className="mt-2 bg-slate-50 p-3 rounded border border-slate-200 h-full">
             This ensures they never encounter an "Unknown Token" (UNK), because they can always fall back to representing a character byte-by-byte.
           </p>
         </section>

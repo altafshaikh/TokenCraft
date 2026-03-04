@@ -1,5 +1,5 @@
 {
   "name": "TokenCraft: Custom Tokenizer Builder",
-  "description": "An interactive tool to build, test, and visualize custom text tokenizers. Use manual Regex rules or ask AI to design one for you.",
+  "description": "An interactive tool to build, test, and visualize custom text tokenizers. Features include Regex rules, AI assistance, and a Token Pot visualization to track usage and cost.",
   "requestFramePermissions": []
 }

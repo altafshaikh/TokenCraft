@@ -6,14 +6,16 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "lint": "tsc --noEmit",
     "preview": "vite preview"
   },
   "dependencies": {
-    "react-dom": "^19.2.4",
-    "lucide-react": "^0.575.0",
     "@google/genai": "^1.42.0",
+    "js-tiktoken": "1.0.10",
+    "lucide-react": "^0.575.0",
+    "motion": "^12.34.4",
     "react": "^19.2.4",
-    "js-tiktoken": "1.0.10"
+    "react-dom": "^19.2.4"
   },
   "devDependencies": {
     "@types/node": "^22.14.0",

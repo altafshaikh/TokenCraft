@@ -5,9 +5,10 @@ import { ArrowDown, ScanLine, FileText, Play, FastForward, RotateCcw, Pause, Lay
 interface ProcessVisualizerProps {
   steps: DebugStep[];
   regexPattern: string;
+  onComplete?: () => void;
 }
 
-const ProcessVisualizer: React.FC<ProcessVisualizerProps> = ({ steps, regexPattern }) => {
+const ProcessVisualizer: React.FC<ProcessVisualizerProps> = ({ steps, regexPattern, onComplete }) => {
   const [visibleCount, setVisibleCount] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -25,11 +26,12 @@ const ProcessVisualizer: React.FC<ProcessVisualizerProps> = ({ steps, regexPatte
       interval = setInterval(() => {
         setVisibleCount((prev) => prev + 1);
       }, 400); // Speed of animation
-    } else if (visibleCount >= steps.length) {
+    } else if (visibleCount >= steps.length && steps.length > 0) {
       setIsPlaying(false);
+      if (onComplete) onComplete();
     }
     return () => clearInterval(interval);
-  }, [isPlaying, visibleCount, steps.length]);
+  }, [isPlaying, visibleCount, steps.length, onComplete]);
 
   // Auto-scroll to follow animation
   useEffect(() => {

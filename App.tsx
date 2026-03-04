@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Code2, RefreshCw, Settings2, Database, ALargeSmall, Split, Layers } from 'lucide-react';
+import { Code2, RefreshCw, Settings2, Database, ALargeSmall, Split, Layers, Zap } from 'lucide-react';
 import TokenizerBuilder from './components/TokenizerBuilder';
 import TokenDisplay from './components/TokenDisplay';
 import ProcessVisualizer from './components/ProcessVisualizer';
+import TokenPot from './components/TokenPot';
 import EducationPanel from './components/EducationPanel';
 import { TokenizerConfig, Token, TokenStats } from './types';
 import { PRESET_TOKENIZERS } from './constants';
@@ -32,6 +33,7 @@ const App: React.FC = () => {
   
   // --- Live Test State ---
   const [inputText, setInputText] = useState(DEFAULT_INPUT);
+  const [isAnimationComplete, setIsAnimationComplete] = useState(false);
   
   // Custom Model Tokens & Steps
   const [customTokens, setCustomTokens] = useState<Token[]>([]);
@@ -41,6 +43,15 @@ const App: React.FC = () => {
   // GPT Model Tokens
   const [gptTokens, setGptTokens] = useState<Token[]>([]);
   const [gptStats, setGptStats] = useState<TokenStats>({ totalTokens: 0, uniqueTokens: 0, averageLength: 0, characterCount: 0 });
+
+  // Reset animation state when steps change
+  useEffect(() => {
+    if (customDebugSteps.length === 0) {
+        setIsAnimationComplete(true);
+    } else {
+        setIsAnimationComplete(false);
+    }
+  }, [customDebugSteps]);
 
   // --- Helpers ---
   const calcStats = (tokens: Token[], text: string): TokenStats => {
@@ -152,7 +163,7 @@ const App: React.FC = () => {
         </div>
       </header>
 
-      <main className="flex-1 flex flex-col lg:flex-row h-[calc(100vh-4rem)] overflow-hidden">
+      <main className="flex-1 flex flex-col lg:flex-row overflow-hidden">
         
         {/* --- LEFT PANEL: CONFIGURATION (Scrollable) --- */}
         <div className="w-full lg:w-[380px] bg-white border-r border-slate-200 flex flex-col h-full overflow-y-auto z-20 shadow-[4px_0_24px_-12px_rgba(0,0,0,0.1)]">
@@ -226,9 +237,6 @@ const App: React.FC = () => {
                         RE-TRAIN MODEL
                     </button>
                 </section>
-                
-                {/* Educational Panel Component */}
-                <EducationPanel />
 
             </div>
         </div>
@@ -237,35 +245,53 @@ const App: React.FC = () => {
         <div className="flex-1 flex flex-col bg-slate-50/50 h-full overflow-hidden">
             
             {/* Input Area */}
-            <div className="p-6 pb-4 flex-shrink-0 bg-white border-b border-slate-200 z-10">
-                 <label className="flex items-center gap-2 text-xs font-bold text-slate-500 mb-3 uppercase tracking-wider">
+            <div className="p-4 pb-2 flex-shrink-0 bg-white border-b border-slate-200 z-10">
+                 <label className="flex items-center gap-2 text-xs font-bold text-slate-500 mb-2 uppercase tracking-wider">
                     <ALargeSmall className="w-4 h-4 text-indigo-500" />
                     Test Input Text
                 </label>
                 <div className="relative group">
                     <textarea 
-                        className="w-full h-28 p-4 text-lg text-slate-800 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 outline-none resize-none transition-all shadow-inner leading-relaxed"
+                        className="w-full h-20 p-3 text-sm text-slate-800 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 outline-none resize-none transition-all shadow-inner leading-relaxed"
                         value={inputText}
                         onChange={handleInputChange}
                         placeholder="Type something here to see how it gets tokenized..."
                     />
-                    <div className="absolute bottom-3 right-3 text-xs text-slate-400 pointer-events-none">
+                    <div className="absolute bottom-2 right-3 text-[10px] text-slate-400 pointer-events-none">
                         {inputText.length} chars
                     </div>
                 </div>
             </div>
 
             {/* Results Area */}
-            <div className="flex-1 p-6 overflow-hidden">
-                {viewMode === 'custom' ? (
-                     <div className="flex flex-col h-full bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-                        <div className="px-4 py-3 border-b border-slate-100 bg-indigo-50/50 flex items-center gap-2">
-                             <Layers className="w-4 h-4 text-indigo-600" />
-                             <h3 className="font-bold text-sm text-indigo-900">Tokenizer Pipeline Visualization</h3>
+            <div className="flex-1 p-4 overflow-hidden flex flex-col min-h-0">
+                {viewMode === 'custom' && (
+                     <div className="flex flex-row h-full gap-4">
+                        {/* 1. Process Visualizer - Takes remaining space */}
+                        <div className="flex-1 min-w-0 bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden flex flex-col">
+                            <div className="px-4 py-2 border-b border-slate-100 bg-indigo-50/50 flex items-center gap-2 flex-shrink-0">
+                                    <Layers className="w-4 h-4 text-indigo-600" />
+                                    <h3 className="font-bold text-xs text-indigo-900">Tokenizer Pipeline Visualization</h3>
+                            </div>
+                            <ProcessVisualizer 
+                                steps={customDebugSteps} 
+                                regexPattern={regexConfig.regex} 
+                                onComplete={() => setIsAnimationComplete(true)}
+                            />
                         </div>
-                        <ProcessVisualizer steps={customDebugSteps} regexPattern={regexConfig.regex} />
+
+                        {/* 2. Token Pot Visualization - Fixed width */}
+                        <div className="flex-shrink-0 w-64">
+                            <TokenPot 
+                                usedTokens={customTokens.length} 
+                                maxTokens={1000} 
+                                showStats={isAnimationComplete}
+                            />
+                        </div>
                      </div>
-                ) : (
+                )}
+
+                {viewMode === 'compare' && (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 h-full">
                         {/* Custom Tokenizer Result */}
                         <div className="flex flex-col h-full min-h-0">
@@ -295,6 +321,11 @@ const App: React.FC = () => {
         </div>
 
       </main>
+      
+      {/* Footer / Education Panel */}
+      <footer className="bg-white border-t border-slate-200 z-30 shrink-0">
+          <EducationPanel />
+      </footer>
     </div>
   );
 };
